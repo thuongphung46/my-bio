@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   firebaseConfigError,
   firebaseProjectId,
@@ -7,21 +8,27 @@ import {
 } from '../../infrastructure/firebase/config';
 import { Header } from '../components/Header';
 import { useFirebaseAuth } from '../hooks/useFirebaseAuth';
+import { useProductTypes } from '../hooks/useProductTypes';
 import { useProducts } from '../hooks/useProducts';
 
 const initialForm = {
   name: '',
   imageUrl: '',
-  linkUrl: ''
+  linkUrl: '',
+  typeId: '',
+  typeName: ''
 };
 
 export function AdminPage() {
+  const navigate = useNavigate();
   const [form, setForm] = useState(initialForm);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isLoginSubmitting, setIsLoginSubmitting] = useState(false);
+  const [isTypePickerOpen, setIsTypePickerOpen] = useState(false);
   const [successText, setSuccessText] = useState<string | null>(null);
   const { createProduct, isCreating, error } = useProducts();
+  const { types, isLoading: isTypesLoading } = useProductTypes();
   const {
     user,
     isAuthLoading,
@@ -127,6 +134,40 @@ export function AdminPage() {
         </label>
 
         <label>
+          <span className="label-row">
+            <span>Loại mặt hàng</span>
+            <button
+              className="ghost-btn mini-btn"
+              type="button"
+              onClick={() => navigate('/admin/types')}
+              disabled={!isAuthenticated}
+              title="Thêm loại mặt hàng"
+            >
+              + Loại
+            </button>
+          </span>
+          <button
+            type="button"
+            className="picker-btn"
+            onClick={() => setIsTypePickerOpen(true)}
+            disabled={!isAuthenticated || isTypesLoading}
+            aria-haspopup="dialog"
+            aria-expanded={isTypePickerOpen}
+          >
+            <span className={`picker-value ${form.typeId ? '' : 'placeholder'}`}>
+              {isTypesLoading
+                ? 'Đang tải loại mặt hàng...'
+                : form.typeId
+                  ? form.typeName
+                  : 'Chọn loại mặt hàng'}
+            </span>
+            <span className="picker-caret" aria-hidden="true">
+              ▾
+            </span>
+          </button>
+        </label>
+
+        <label>
           Ảnh sản phẩm (URL)
           <input
             required
@@ -199,6 +240,63 @@ export function AdminPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isTypePickerOpen && (
+        <div
+          className="modal-backdrop"
+          role="presentation"
+          onClick={() => setIsTypePickerOpen(false)}
+        >
+          <div
+            className="picker-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Chọn loại mặt hàng"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="picker-header">
+              <h2>Chọn loại mặt hàng</h2>
+              <button
+                className="ghost-btn mini-btn"
+                type="button"
+                onClick={() => {
+                  setIsTypePickerOpen(false);
+                  navigate('/admin/types');
+                }}
+              >
+                + Loại
+              </button>
+            </div>
+
+            {isTypesLoading ? (
+              <p className="state-text">Đang tải...</p>
+            ) : !types.length ? (
+              <p className="state-text">Chưa có loại nào. Bấm “+ Loại” để thêm.</p>
+            ) : (
+              <ul className="picker-items" role="listbox" aria-label="Danh sách loại mặt hàng">
+                {types.map((type) => (
+                  <li key={type.id}>
+                    <button
+                      type="button"
+                      className={`picker-item ${form.typeId === type.id ? 'active' : ''}`}
+                      onClick={() => {
+                        setForm((prev) => ({
+                          ...prev,
+                          typeId: type.id,
+                          typeName: type.name
+                        }));
+                        setIsTypePickerOpen(false);
+                      }}
+                    >
+                      {type.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       )}
