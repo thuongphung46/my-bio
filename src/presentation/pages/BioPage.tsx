@@ -41,35 +41,32 @@ export function BioPage() {
   }, [products, searchTerm, typeFilter]);
 
   return (
-    <main className="page-wrap">
-      <Header
-        title=""
-        subtitle="Trang trưng bày của Phùng Hoài Thương"
-        actionLabel="Vào trang admin"
-        actionPath="/admin"
-      />
+    <main>
+      <section className="page-wrap">
+        <Header
+          title=""
+          subtitle="Trang trưng bày của Phùng Hoài Thương"
+          actionLabel="Vào trang admin"
+          actionPath="/admin"
+        />
 
-      <section className="profile-strip" aria-label="Thông tin hồ sơ">
-        <div className="avatar" aria-hidden={!avatarUrl}>
-          {avatarUrl ? (
-            <img src={avatarUrl} alt={`Avatar ${profileName}`} loading="eager" />
-          ) : (
-            <span className="avatar-fallback" aria-hidden="true">
-              {avatarInitial}
-            </span>
-          )}
-        </div>
-        <div className="profile-meta">
-          <p className="profile-name">{profileName}</p>
-        </div>
+        <section className="profile-strip" aria-label="Thông tin hồ sơ">
+          <div className="avatar" aria-hidden={!avatarUrl}>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={`Avatar ${profileName}`} loading="eager" />
+            ) : (
+              <span className="avatar-fallback" aria-hidden="true">
+                {avatarInitial}
+              </span>
+            )}
+          </div>
+          <div className="profile-meta">
+            <p className="profile-name">{profileName}</p>
+          </div>
+        </section>
       </section>
 
-      {isLoading && <p className="state-text">Đang tải sản phẩm...</p>}
-      {error && <p className="state-text error">{error}</p>}
-
-      {!isLoading && !products.length && <p className="state-text">Chưa có sản phẩm.</p>}
-
-      <section className="view-controls">
+      <nav className="view-controls" aria-label="Thanh công cụ">
         <div className="view-controls-inner">
           <div className="toolbar-left">
             <p className="product-count">Tổng số sản phẩm: {products.length}</p>
@@ -109,6 +106,7 @@ export function BioPage() {
               </button>
             </div>
           </div>
+
           <button
             type="button"
             className="view-switch"
@@ -137,16 +135,23 @@ export function BioPage() {
             )}
           </button>
         </div>
-      </section>
+      </nav>
 
-      {!isLoading && !!products.length && !filteredProducts.length && (
-        <p className="state-text">Không tìm thấy sản phẩm phù hợp.</p>
-      )}
+      <section className="page-wrap">
+        {isLoading && <p className="state-text">Đang tải sản phẩm...</p>}
+        {error && <p className="state-text error">{error}</p>}
 
-      <section className={viewMode === "grid" ? "product-grid" : "product-list"}>
-        {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} viewMode={viewMode} />
-        ))}
+        {!isLoading && !products.length && <p className="state-text">Chưa có sản phẩm.</p>}
+
+        {!isLoading && !!products.length && !filteredProducts.length && (
+          <p className="state-text">Không tìm thấy sản phẩm phù hợp.</p>
+        )}
+
+        <section className={viewMode === "grid" ? "product-grid" : "product-list"}>
+          {filteredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} viewMode={viewMode} />
+          ))}
+        </section>
       </section>
     </main>
   );
