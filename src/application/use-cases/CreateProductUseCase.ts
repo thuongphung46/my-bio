@@ -10,6 +10,10 @@ export class CreateProductUseCase {
       throw new Error('Tên sản phẩm không được để trống.');
     }
 
+    if (!input.typeId.trim()) {
+      throw new Error('Vui lòng chọn loại mặt hàng.');
+    }
+
     this.ensureUrl(input.imageUrl, 'Image URL');
     this.ensureUrl(input.linkUrl, 'Product link');
 

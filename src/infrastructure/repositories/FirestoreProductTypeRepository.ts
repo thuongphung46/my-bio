@@ -7,22 +7,19 @@ import {
   query
 } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
-import type { NewProductInput, Product } from '../../domain/entities/Product';
-import type { ProductRepository } from '../../domain/repositories/ProductRepository';
+import type { NewProductTypeInput, ProductType } from '../../domain/entities/ProductType';
+import type { ProductTypeRepository } from '../../domain/repositories/ProductTypeRepository';
 import { db, firebaseConfigError } from '../firebase/config';
 
-const collectionName = 'products';
+const collectionName = 'productTypes';
 
-export class FirestoreProductRepository implements ProductRepository {
-  async getProducts(): Promise<Product[]> {
+export class FirestoreProductTypeRepository implements ProductTypeRepository {
+  async getTypes(): Promise<ProductType[]> {
     const firestore = this.ensureDbReady();
 
     try {
-      const productsQuery = query(
-        collection(firestore, collectionName),
-        orderBy('createdAt', 'desc')
-      );
-      const snapshot = await getDocs(productsQuery);
+      const typesQuery = query(collection(firestore, collectionName), orderBy('createdAt', 'asc'));
+      const snapshot = await getDocs(typesQuery);
 
       return snapshot.docs.map((doc) => {
         const data = doc.data();
@@ -30,11 +27,7 @@ export class FirestoreProductRepository implements ProductRepository {
 
         return {
           id: doc.id,
-          name: data.name as string,
-          imageUrl: data.imageUrl as string,
-          linkUrl: (data.linkUrl ?? data.shopeeUrl ?? data.tiktokUrl ?? '') as string,
-          typeId: (data.typeId ?? '') as string,
-          typeName: (data.typeName ?? '') as string,
+          name: (data.name ?? '') as string,
           createdAt: createdAt ? createdAt.toISOString() : new Date().toISOString()
         };
       });
@@ -43,12 +36,12 @@ export class FirestoreProductRepository implements ProductRepository {
     }
   }
 
-  async createProduct(input: NewProductInput): Promise<void> {
+  async createType(input: NewProductTypeInput): Promise<void> {
     const firestore = this.ensureDbReady();
 
     try {
       await addDoc(collection(firestore, collectionName), {
-        ...input,
+        name: input.name,
         createdAt: Timestamp.now()
       });
     } catch (error) {
@@ -85,3 +78,4 @@ export class FirestoreProductRepository implements ProductRepository {
     return db;
   }
 }
+

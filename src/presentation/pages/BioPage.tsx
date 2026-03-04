@@ -4,25 +4,41 @@ import { useMemo, useState } from "react";
 import { Header } from "../components/Header";
 import { ProductCard } from "../components/ProductCard";
 import { useProducts } from "../hooks/useProducts";
+import { useProductTypes } from "../hooks/useProductTypes";
 
 type ViewMode = "grid" | "list";
+type TypeFilter = "all" | "unknown" | string;
 
 export function BioPage() {
   const { products, isLoading, error } = useProducts();
+  const { types } = useProductTypes();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const profileName = import.meta.env.VITE_PROFILE_NAME?.trim() || "Profile";
   const avatarUrl = import.meta.env.VITE_PROFILE_AVATAR_URL?.trim() || "";
   const avatarInitial = profileName.trim().charAt(0).toUpperCase() || "P";
 
   const filteredProducts = useMemo(() => {
     const keyword = searchTerm.trim().toLowerCase();
-    if (!keyword) {
-      return products;
-    }
+    return products.filter((product) => {
+      if (typeFilter === "unknown") {
+        if (product.typeId) {
+          return false;
+        }
+      } else if (typeFilter !== "all") {
+        if (product.typeId !== typeFilter) {
+          return false;
+        }
+      }
 
-    return products.filter((product) => product.name.toLowerCase().includes(keyword));
-  }, [products, searchTerm]);
+      if (!keyword) {
+        return true;
+      }
+
+      return product.name.toLowerCase().includes(keyword);
+    });
+  }, [products, searchTerm, typeFilter]);
 
   return (
     <main className="page-wrap">
@@ -65,6 +81,33 @@ export function BioPage() {
               onChange={(event) => setSearchTerm(event.target.value)}
               aria-label="Tìm sản phẩm theo tên"
             />
+            <div className="type-chips" role="tablist" aria-label="Lọc nhanh theo loại mặt hàng">
+              <button
+                type="button"
+                className={`chip-btn ${typeFilter === "all" ? "active" : ""}`}
+                onClick={() => setTypeFilter("all")}
+              >
+                Tất cả
+              </button>
+              {types.map((type) => (
+                <button
+                  key={type.id}
+                  type="button"
+                  className={`chip-btn ${typeFilter === type.id ? "active" : ""}`}
+                  onClick={() => setTypeFilter(type.id)}
+                >
+                  {type.name}
+                </button>
+              ))}
+              <button
+                type="button"
+                className={`chip-btn ${typeFilter === "unknown" ? "active" : ""}`}
+                onClick={() => setTypeFilter("unknown")}
+                title="Sản phẩm chưa có loại"
+              >
+                Khác
+              </button>
+            </div>
           </div>
           <button
             type="button"
