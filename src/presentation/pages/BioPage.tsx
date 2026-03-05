@@ -5,6 +5,7 @@ import { Header } from "../components/Header";
 import { ProductCard } from "../components/ProductCard";
 import { useProducts } from "../hooks/useProducts";
 import { useProductTypes } from "../hooks/useProductTypes";
+import { usePresenceCount } from "../hooks/usePresenceCount";
 
 type ViewMode = "grid" | "list";
 type TypeFilter = "all" | "unknown" | string;
@@ -12,6 +13,7 @@ type TypeFilter = "all" | "unknown" | string;
 export function BioPage() {
   const { products, isLoading, error } = useProducts();
   const { types } = useProductTypes();
+  const { onlineCount } = usePresenceCount();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
@@ -69,7 +71,9 @@ export function BioPage() {
       <nav className="view-controls" aria-label="Thanh công cụ">
         <div className="view-controls-inner">
           <div className="toolbar-left">
-            <p className="product-count">Tổng số sản phẩm: {products.length}</p>
+            <p className="product-count">
+              Tổng số sản phẩm: {products.length} · Online: {onlineCount}
+            </p>
             <input
               className="search-input"
               type="search"
